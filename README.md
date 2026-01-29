@@ -2,6 +2,8 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.4.
 
+# Launch UI without Docker
+
 ## Development server
 
 To start a local development server, run:
@@ -13,20 +15,6 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
 ## Building
 
 To build the project run:
@@ -37,24 +25,64 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Running unit tests
+## Backend Changes
+Replace file `my_project/api-gateway/src/main/resources/application.yml` with followed:
+``` bash
+server:
+  port: 8083
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://127.0.0.1:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            exposedHeaders:
+              - Authorization
+            allowCredentials: true
 
-```bash
-ng test
+gateway:
+  auth:
+    url: http://auth-service:8081
+  user:
+    url: http://user-service:8080
+  order:
+    url: http://order-service:8082
+  payment:
+    url: http://payment-service:8084
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+
+# admin defaults
+gateway-admin:
+  email: ${GATEWAY_ADMIN_EMAIL:admin@example.com}
+  password: ${GATEWAY_ADMIN_PASSWORD:admin123}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: INFO
+    org.springframework.web: INFO
 ```
+If you want, you can change file `application-docker.yml` with the same content
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+# Launch UI with Docker
+!!!attention
+Work in progress

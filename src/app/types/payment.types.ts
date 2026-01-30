@@ -14,7 +14,15 @@ export interface CreatePaymentRequest {
   orderId: number;
   userId: number;
   paymentAmount: number;
+}
+
+export interface PaymentResponse {
+  id: number;
+  orderId: number;
+  userId: number;
   status: PaymentStatus;
+  timestamp: string;
+  paymentAmount: number
 }
 
 export interface PaymentSearchParams {

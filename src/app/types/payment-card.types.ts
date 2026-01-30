@@ -5,11 +5,11 @@ export interface PaymentCard {
     holder: string;
     expirationDate: string;
     active: boolean;
-    createdAt: string;
-    updatedAt: string;
+    createdAt?: string;
+    updatedAt?: string;
   }
   
-  export interface CreatePaymentCardRequest {
+  export interface PaymentCardCreateRequest {
     number: string;
     holder: string;
     expirationDate: string;

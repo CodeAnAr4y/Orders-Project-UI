@@ -1,14 +1,15 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import {
   PaymentCard,
-  CreatePaymentCardRequest,
   UpdatePaymentCardRequest,
   PageResponse,
+  PaymentCardCreateRequest,
 } from '../types/payment-card.types';
+import { ApiResponse } from '../types/auth.types';
 
 interface PageRequest {
   page?: number;
@@ -19,54 +20,65 @@ interface PageRequest {
 @Injectable({ providedIn: 'root' })
 export class PaymentCardService {
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiGatewayUrl}/api/v1/users`;
+
+  private readonly apiUrl = `${environment.apiGatewayUrl || ''}/api/v1/users`;
 
   readonly cards = signal<PaymentCard[]>([]);
   readonly currentCard = signal<PaymentCard | null>(null);
   readonly totalPages = signal(0);
   readonly totalElements = signal(0);
 
-  // Получить все карты пользователя (массив)
+  // GET /api/v1/users/{userId}/payment-cards  -> ApiResponse<List<PaymentCardDTO>>
   getCardsByUserId(userId: number): Observable<PaymentCard[]> {
-    return this.http.get<PaymentCard[]>(`${this.apiUrl}/${userId}/payment-cards`).pipe(
-      tap(cards => this.cards.set(cards))
-    );
+    return this.http
+      .get<ApiResponse<PaymentCard[]>>(`${this.apiUrl}/${userId}/payment-cards`)
+      .pipe(map((res) => res.data));
   }
 
-  // Получить карты пользователя с пагинацией
-  getCardsByUserIdPaged(userId: number, params?: PageRequest): Observable<PageResponse<PaymentCard>> {
+  // GET /api/v1/users/{userId}/payment-cards/paged -> ApiResponse<Page<PaymentCardDTO>>
+  getCardsByUserIdPaged(
+    userId: number,
+    params?: PageRequest
+  ): Observable<PageResponse<PaymentCard>> {
     let httpParams = new HttpParams();
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
+    if (params?.page !== undefined) httpParams = httpParams.set('page', String(params.page));
+    if (params?.size !== undefined) httpParams = httpParams.set('size', String(params.size));
     if (params?.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http
-      .get<PageResponse<PaymentCard>>(`${this.apiUrl}/${userId}/payment-cards/paged`, {
+      .get<ApiResponse<PageResponse<PaymentCard>>>(`${this.apiUrl}/${userId}/payment-cards/paged`, {
         params: httpParams,
       })
       .pipe(
-        tap(res => {
-          this.cards.set(res.content);
-          this.totalPages.set(res.totalPages);
-          this.totalElements.set(res.totalElements);
+        map((res) => res.data),
+        tap((page) => {
+          this.cards.set(page.content);
+          this.totalPages.set(page.totalPages);
+          this.totalElements.set(page.totalElements);
         })
       );
   }
 
-  create(userId: number, req: CreatePaymentCardRequest): Observable<PaymentCard> {
-    return this.http.post<PaymentCard>(`${this.apiUrl}/${userId}/payment-cards`, req);
+  create(userId: number, req: PaymentCardCreateRequest): Observable<PaymentCard> {
+    return this.http
+      .post<ApiResponse<PaymentCard>>(`${this.apiUrl}/${userId}/payment-cards`, req)
+      .pipe(map((res) => res.data));
   }
 
   update(userId: number, cardId: number, req: UpdatePaymentCardRequest): Observable<PaymentCard> {
-    return this.http.put<PaymentCard>(`${this.apiUrl}/${userId}/payment-cards/${cardId}`, req);
+    return this.http
+      .put<ApiResponse<PaymentCard>>(`${this.apiUrl}/${userId}/payment-cards/${cardId}`, req)
+      .pipe(map((res) => res.data));
   }
 
   updateStatus(userId: number, cardId: number, active: boolean): Observable<PaymentCard> {
-    return this.http.patch<PaymentCard>(
-      `${this.apiUrl}/${userId}/payment-cards/${cardId}/status`,
-      null,
-      { params: { active } }
-    );
+    return this.http
+      .patch<ApiResponse<PaymentCard>>(
+        `${this.apiUrl}/${userId}/payment-cards/${cardId}/status`,
+        null,
+        { params: { active: String(active) } }
+      )
+      .pipe(map((res) => res.data));
   }
 
   delete(userId: number, cardId: number): Observable<void> {

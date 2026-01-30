@@ -2,9 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+
 import { PaymentService } from '../../../services/payment.service';
 import { AuthService } from '../../../services/auth.service';
-import { Payment, PaymentStatus } from '../../../types/payment.types';
+import { UserService } from '../../../services/user.service';
+
+import { PaymentResponse, PaymentStatus, PaymentSearchParams } from '../../../types/payment.types';
 
 @Component({
   selector: 'app-payments-list',
@@ -16,14 +19,14 @@ import { Payment, PaymentStatus } from '../../../types/payment.types';
 export class PaymentsListPage implements OnInit {
   readonly auth = inject(AuthService);
   readonly paymentService = inject(PaymentService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
-  readonly payments = signal<Payment[]>([]);
-  readonly currentPage = signal(0);
+  readonly payments = signal<PaymentResponse[]>([]);
 
-  selectedStatus = '';
+  selectedStatus: '' | PaymentStatus = '';
 
   ngOnInit() {
     this.loadPayments();
@@ -33,15 +36,25 @@ export class PaymentsListPage implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const params = { page: this.currentPage(), size: 10 };
+    const params: PaymentSearchParams = {};
 
-    this.paymentService.getAll(params).subscribe({
-      next: (res) => {
-        let filtered = res.content;
-        if (this.selectedStatus) {
-          filtered = filtered.filter((p) => p.status === this.selectedStatus);
-        }
-        this.payments.set(filtered);
+    if (!this.auth.isAdmin()) {
+      const userId = this.userService.userId();
+      if (!userId) {
+        this.error.set('User not found. Please login again.');
+        this.loading.set(false);
+        return;
+      }
+      params.userId = userId;
+    }
+
+    if (this.selectedStatus) {
+      params.status = this.selectedStatus;
+    }
+
+    this.paymentService.searchByCriteria(params).subscribe({
+      next: (payments) => {
+        this.payments.set(payments);
         this.loading.set(false);
       },
       error: (err) => {
@@ -53,18 +66,11 @@ export class PaymentsListPage implements OnInit {
   }
 
   applyFilters() {
-    this.currentPage.set(0);
     this.loadPayments();
   }
 
   resetFilters() {
     this.selectedStatus = '';
-    this.currentPage.set(0);
-    this.loadPayments();
-  }
-
-  changePage(page: number) {
-    this.currentPage.set(page);
     this.loadPayments();
   }
 

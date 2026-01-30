@@ -8,7 +8,11 @@
           @if (auth.isAdmin()) { Manage all customer orders } @else { View and manage your orders }
         </p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex gap-3 text-end">
+        <div class="text-sm">
+          <p class="font-medium text-gray-900">{{ auth.email() }}</p>
+          <p class="text-gray-500">{{ auth.role() }}</p>
+        </div>
         <button
           (click)="logout()"
           class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"

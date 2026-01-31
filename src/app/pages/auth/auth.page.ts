@@ -63,7 +63,6 @@ export class Auth {
           }
           this.auth.setIdentity(vres.data);
           this.router.navigate(['orders']);
-          console.log('navigate'); 
         },
         error: (err) => {
           this.errorText.set(err?.error?.message ?? err?.message ?? 'Login failed');

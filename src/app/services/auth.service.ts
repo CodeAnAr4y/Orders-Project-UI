@@ -9,6 +9,7 @@ import {
   TokenValidationResponse,
   UserCredentialsRequest,
   Role,
+  RegisterUserResponse,
 } from '../types/auth.types';
 
 const ACCESS_KEY = 'access_token';
@@ -94,6 +95,6 @@ export class AuthService {
   }
 
   registerByAdmin(req: UserCredentialsRequest) {
-    return this.http.post<ApiResponse<unknown>>(`${this.apiUrl}/api/v1/auth/register`, req);
+    return this.http.post<ApiResponse<RegisterUserResponse>>(`${this.apiUrl}/api/v1/auth/register`, req);
   }
 }

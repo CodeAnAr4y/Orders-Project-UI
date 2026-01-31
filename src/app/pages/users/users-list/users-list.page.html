@@ -11,11 +11,18 @@
           <p class="font-medium text-gray-900">{{ auth.email() }}</p>
           <p class="text-gray-500">{{ auth.role() }}</p>
         </div>
+
         <button
           (click)="logout()"
           class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
         >
           Logout
+        </button>
+        <button
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          routerLink="/users/new"
+        >
+          + New User
         </button>
       </div>
     </div>

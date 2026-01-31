@@ -1,15 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';  
 import { CommonModule } from '@angular/common';  
-import { Router } from '@angular/router';  
+import { Router, RouterLink } from '@angular/router';  
 import { FormsModule } from '@angular/forms';  
-import { UserService } from '../../services/user.service';  
-import { AuthService } from '../../services/auth.service';  
-import { User } from '../../types/user.types';  
+import { UserService } from '../../../services/user.service';  
+import { AuthService } from '../../../services/auth.service';  
+import { User } from '../../../types/user.types';  
 
 @Component({  
   selector: 'app-users-list',  
   standalone: true,  
-  imports: [CommonModule, FormsModule],  
+  imports: [CommonModule, FormsModule, RouterLink],  
   templateUrl: './users-list.page.html',  
   styleUrl: './users-list.page.css',  
 })  
@@ -107,4 +107,6 @@ export class UsersListPage implements OnInit {
       day: 'numeric',
     });
   }
+
+  addUser(){}
 }

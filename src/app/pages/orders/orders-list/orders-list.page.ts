@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../services/order.service';
 import { AuthService } from '../../../services/auth.service';
 import { Order, OrderStatus } from '../../../types/order.types';
+import { UserService } from '../../../services/user.service';
 
 @Component({
   selector: 'app-orders-list',
@@ -15,6 +16,7 @@ import { Order, OrderStatus } from '../../../types/order.types';
 })
 export class OrdersListPage implements OnInit {
   readonly auth = inject(AuthService);
+  readonly userService = inject(UserService);
   readonly orderService = inject(OrderService);
   private router = inject(Router);
 
@@ -29,6 +31,20 @@ export class OrdersListPage implements OnInit {
   ngOnInit() {
     this.currentRoute.set(this.router.url);
     this.loadOrders();
+    this.loadUserId();
+  }
+
+  loadUserId() {
+    this.userService.getUserIdByEmail(this.auth.email() ?? '').subscribe({
+      next: (res) => {
+        // TODO:
+        // fix to real value type
+        this.userService.setUserId(typeof res === 'number' ? res : res.id);
+      },
+      error: () => {
+        console.error('Failed to fetch user id by email address');
+      },
+    });
   }
 
   loadOrders() {
@@ -43,7 +59,7 @@ export class OrdersListPage implements OnInit {
 
     const request$ = this.auth.isAdmin()
       ? this.orderService.getAllWithFilters(params)
-      : this.orderService.getMyOrders(params);
+      : this.orderService.getAllOrdersForUsers(params);
 
     request$.subscribe({
       next: (res) => {

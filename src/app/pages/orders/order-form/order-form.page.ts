@@ -128,7 +128,7 @@ export class OrderFormPage implements OnInit {
     this.error.set(null);
 
     const request = {
-      userId: 1, // В реальности нужно брать из auth.userId или бэк сам определит по токену
+      userId: this.userService.userId() ?? 1,
       orderItems: this.orderItems().map((item, indx) => ({
         id: indx + 1,
         itemId: item.itemId,
@@ -139,7 +139,7 @@ export class OrderFormPage implements OnInit {
     const save$ = this.isEditMode()
       ? this.orderService.update(this.orderId()!, {
           status: 'PENDING',
-          userID: this.userService.userId(),
+          userID: this.userService.userId() ?? 1,
           orderItems: request.orderItems,
         })
       : this.orderService.create(request);

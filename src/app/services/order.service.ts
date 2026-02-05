@@ -31,12 +31,31 @@ export class OrderService {
     if (params?.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<PageResponse<Order>>(this.apiUrl, { params: httpParams }).pipe(
-      tap(res => {
+      tap((res) => {
         this.orders.set(res.content);
         this.totalPages.set(res.totalPages);
         this.totalElements.set(res.totalElements);
       })
     );
+  }
+
+  getAllOrdersForUsers(params?: PageRequest) {
+    let httpParams = new HttpParams();
+    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
+    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
+    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
+    
+    return this.http
+      .get<PageResponse<Order>>(`${this.apiUrl}/user/${this.userService.userId()}`, {
+        params: httpParams,
+      })
+      .pipe(
+        tap((res) => {
+          this.orders.set(res.content);
+          this.totalPages.set(res.totalPages);
+          this.totalElements.set(res.totalElements);
+        })
+      );
   }
 
   // Получить заказы с фильтрами (по статусам)
@@ -51,13 +70,13 @@ export class OrderService {
     if (params.size !== undefined) httpParams = httpParams.set('size', params.size);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
     if (params.statuses && params.statuses.length > 0) {
-      params.statuses.forEach(status => {
+      params.statuses.forEach((status) => {
         httpParams = httpParams.append('statuses', status);
       });
     }
 
     return this.http.get<PageResponse<Order>>(this.apiUrl, { params: httpParams }).pipe(
-      tap(res => {
+      tap((res) => {
         this.orders.set(res.content);
         this.totalPages.set(res.totalPages);
         this.totalElements.set(res.totalElements);
@@ -66,9 +85,9 @@ export class OrderService {
   }
 
   getById(id: number): Observable<Order> {
-    return this.http.get<Order>(`${this.apiUrl}/${id}`).pipe(
-      tap(order => this.currentOrder.set(order))
-    );
+    return this.http
+      .get<Order>(`${this.apiUrl}/${id}`)
+      .pipe(tap((order) => this.currentOrder.set(order)));
   }
 
   // Получить заказы конкретного пользователя (для админа)
@@ -81,7 +100,7 @@ export class OrderService {
     return this.http
       .get<PageResponse<Order>>(`${this.apiUrl}/user/${userId}`, { params: httpParams })
       .pipe(
-        tap(res => {
+        tap((res) => {
           this.orders.set(res.content);
           this.totalPages.set(res.totalPages);
           this.totalElements.set(res.totalElements);
@@ -99,21 +118,5 @@ export class OrderService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  // Получить заказы текущего пользователя (endpoint /my может не быть в Postman, но логично)
-  getMyOrders(params?: PageRequest): Observable<PageResponse<Order>> {
-    let httpParams = new HttpParams();
-    if (params?.page !== undefined) httpParams = httpParams.set('page', params.page);
-    if (params?.size !== undefined) httpParams = httpParams.set('size', params.size);
-    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
-
-    return this.http.get<PageResponse<Order>>(`${this.apiUrl}/${this.userService.userId()}`, { params: httpParams }).pipe(
-      tap(res => {
-        this.orders.set(res.content);
-        this.totalPages.set(res.totalPages);
-        this.totalElements.set(res.totalElements);
-      })
-    );
   }
 }

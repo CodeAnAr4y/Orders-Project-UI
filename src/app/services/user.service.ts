@@ -20,7 +20,7 @@ export class UserService {
   readonly currentUser = signal<User | null>(null);
   readonly totalPages = signal(0);
   readonly totalElements = signal(0);
-  readonly userId = signal<number>(1);
+  readonly userId = signal<number | null>(null);
 
   getAll(params?: PageRequest): Observable<PageResponse<User>> {
     let httpParams = new HttpParams();
@@ -29,12 +29,16 @@ export class UserService {
     if (params?.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<PageResponse<User>>(this.apiUrl, { params: httpParams }).pipe(
-      tap(res => {
+      tap((res) => {
         this.users.set(res.data.content);
         this.totalPages.set(res.totalPages);
         this.totalElements.set(res.totalElements);
       })
     );
+  }
+
+  getUserIdByEmail(email: string): Observable<number | { id: number }> {
+    return this.http.get<number>(`${this.apiUrl}/email/${email}`);
   }
 
   getAllWithFilters(params: UserFilterParams): Observable<PageResponse<User>> {
@@ -45,7 +49,7 @@ export class UserService {
     if (params.surname) httpParams = httpParams.set('surname', params.surname);
 
     return this.http.get<PageResponse<User>>(`${this.apiUrl}/filter`, { params: httpParams }).pipe(
-      tap(res => {
+      tap((res) => {
         this.users.set(res.data.content);
         this.totalPages.set(res.totalPages);
         this.totalElements.set(res.totalElements);
@@ -54,12 +58,12 @@ export class UserService {
   }
 
   getById(id: number): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`).pipe(
-      tap(user => this.currentUser.set(user))
-    );
+    return this.http
+      .get<User>(`${this.apiUrl}/${id}`)
+      .pipe(tap((user) => this.currentUser.set(user)));
   }
 
-  setUserId(userId: number){
+  setUserId(userId: number) {
     this.userId.set(userId);
   }
 

@@ -37,8 +37,13 @@ export class UserService {
     );
   }
 
-  getUserIdByEmail(email: string): Observable<number | { id: number }> {
-    return this.http.get<number>(`${this.apiUrl}/email/${email}`);
+  getUserIdByEmail(email: string): Observable<{
+    success: boolean;
+    message: string;
+    data: number;
+    timestamp: string;
+  }> {
+    return this.http.get<any>(`${this.apiUrl}/email/${email}`);
   }
 
   getAllWithFilters(params: UserFilterParams): Observable<PageResponse<User>> {

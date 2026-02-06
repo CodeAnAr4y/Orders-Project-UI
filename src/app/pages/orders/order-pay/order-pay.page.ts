@@ -206,7 +206,7 @@ export class OrderPayPage implements OnInit, OnDestroy {
           // при желании можно обновить заказ один раз, но без ожиданий/поллинга:
           // this.loadOrder(order.id);
 
-          setTimeout(() => this.router.navigate(['/orders']), 1200);
+          this.router.navigate(['/orders']);
         },
         error: (err) => {
           this.error.set('Payment failed.');

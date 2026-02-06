@@ -30,16 +30,14 @@ export class OrdersListPage implements OnInit {
 
   ngOnInit() {
     this.currentRoute.set(this.router.url);
-    this.loadOrders();
     this.loadUserId();
   }
 
   loadUserId() {
     this.userService.getUserIdByEmail(this.auth.email() ?? '').subscribe({
       next: (res) => {
-        // TODO:
-        // fix to real value type
-        this.userService.setUserId(typeof res === 'number' ? res : res.id);
+        this.userService.setUserId(res.data);
+        this.loadOrders();
       },
       error: () => {
         console.error('Failed to fetch user id by email address');
